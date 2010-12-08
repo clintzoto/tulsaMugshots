@@ -1,0 +1,120 @@
+<!DOCTYPE html> 
+<html> 
+    <head>
+    <title>Elite GP</title>
+    <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.0a2/jquery.mobile-1.0a2.min.css" />
+    <script src="http://code.jquery.com/jquery-1.4.4.min.js"></script>
+    <script src="http://code.jquery.com/mobile/1.0a2/jquery.mobile-1.0a2.min.js"></script>
+
+    <script>
+        function getInmateDetails(id) {
+            console.log("id=" + id);
+            //jQuery.pageLoading(1);
+            $("#inmateDetail").html("");
+            $.getJSON("/2.0/getInmate.php?id=" + id, function(d){
+                    console.log(d);
+                    var detail = "<img style='width: 300px;' src='/mugs/" + d.personId + ".jpg' />"
+                        + "<br />"
+                        + "<span style='color: red;'>" + d.charge + "</span><br />"
+                        + "" + d.name +
+                        + " " + d.birthday + "<br />"
+                        + " " + d.hair + " hair " + d.eyes + " eyes" + d.feet + "\'" + d.inches + "\"" + "inches" + d.weight + "lbs<br />"
+                    $(detail).appendTo("#inmateDetail");
+            });
+            //jQuery.pageLoading(0);
+        }
+
+        function getInmatesByDate(thisDay) {
+            //console.log('this day: ' + thisDay);
+            //jQuery.pageLoading(1);
+            $.getJSON("/2.0/getInmatesByDate.php?thisDay=" + thisDay, function(data){
+                $("#inmateBrief li").remove();
+                for (i=0; i < data.length; i++) {
+                var inmate = "<li><a onclick='getInmateDetails(" + data[i].personId + "); return;' href='#inmateDetails'>"
+                        + "<img style='height: 55px;' src='/mugs/" + data[i].personId + ".jpg' />"
+                        + data[i].name + "</a><br /><span style='color:white; font-size: 13px;'>" + data[i].bookingTime  + "</span></li>";
+                    $(inmate).appendTo("#inmateBrief");
+                }
+                $("#inmateBrief").listview("refresh");
+            });
+            //jQuery.pageLoading(0);
+        }
+        function loadData() {
+            $.getJSON("/2.0/getDates.php", function(data) {
+                $("#dates li").remove();
+                for (i=0; i < data.length; i++) {
+                console.log(data[i]);
+                    var DatesItem = '<li><a onclick="getInmatesByDate(\''  + data[i] + '\'); return;" href="#inmateBriefs">' + data[i] + '</a></li>';
+                    $(DatesItem).appendTo("#dates");
+                }
+                $("#dates").listview("refresh");
+            });
+        }
+        $(document).ready(function() {
+            loadData();
+        });
+    </script>
+
+    <style type="text/css">
+        .content_list .ui-btn-inner { white-space:normal; font-weight:normal; }
+        .content_list .ui-btn-inner a { text-decoration:none; color:#ffffff; }
+        .content_list .ui-btn-inner img { float:left; margin-right: 4px; position: relative; top:0px; left:0px; }
+        .ui-li-has-thumb .ui-btn-inner {min-height: 26px; padding-left: 83px;}
+        .ui-li-has-thumb .ui-btn-inner img {margin-top: 4px; margin-left: 4px;}
+        .content_list .title { font-weight:bold; }
+        .content_list .info { clear:both; font-size:11px; padding-top:4px; }
+        .content_list .source { float: left; width: 49%; }
+        .content_list .posted { float: left; width: 49%; text-align: right; }
+        .content_list .points { float: right; width: 50px; text-align:right; }
+        .news_list .ui-btn-text { white-space: normal; }
+        .news_list .ui-btn-inner { font-size: 13px; }
+        .news_list { -webkit-padding-start: 0px; }
+        .content_list .ui-btn-inner { padding: 0.7em 35px 0.7em 15px; }
+        /*.ui-content { padding-top: 0px; }*/
+    </style>
+    <link href="images/icons/icon.png" rel="apple-touch-icon" />
+</head>
+<body> 
+
+<div data-role="page" data-theme="b">
+
+    <div data-role="header" data-position="inline">
+        <h1><img src="images/icons/icon_condensed.png" style="height: 24px; vertical-align: middle;" /> Elite GP</h1>
+    </div>
+
+    <div data-role="content">
+        <ul id="dates" data-role="listview" data-theme="b"></ul>
+    </div>
+
+</div>
+
+<div data-role="page" data-theme="b" id="inmateBriefs">
+
+    <div data-role="header">
+        <h1>Inmates</h1>
+    </div>
+
+    <div data-role="content">
+        <ul id="inmateBrief" data-role="listview" data-theme="b"></ul>
+    </div>
+
+</div>
+
+<div data-role="page" data-theme="b" id="inmateDetails">
+    <div data-role="header">
+        <h1>Inmate Details</h1>
+    </div>
+
+    <div id="inmateDetail" data-role="content" data-theme="b">
+    </div>
+
+</div>
+
+</body>
+</html>
+
+
