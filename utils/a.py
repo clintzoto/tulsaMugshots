@@ -1,9 +1,9 @@
 #!/usr/bin/python2.5
+import sys
 
-environ = 'dev'
+environ = 'prod'
 
 if environ == "dev":
-    import sys
     environDB = "dev"
     print "##################################################################"
     print "##########-----------This is development------------##############"
