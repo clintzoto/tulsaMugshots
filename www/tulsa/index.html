@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="http://code.jquery.com/mobile/1.0a2/jquery.mobile-1.0a2.min.css" />
     <script src="http://code.jquery.com/jquery-1.4.4.min.js"></script>
     <script src="http://code.jquery.com/mobile/1.0a2/jquery.mobile-1.0a2.min.js"></script>
+    <script src="/javascript/jquery.swipe.js"></script>
 
     <script>
         function getInmateDetails(id) {
@@ -41,7 +42,7 @@
         }
 
         function getInmatesByDate(thisDay) {
-            //jQuery.pageLoading(1);
+            $.mobile.pageLoading();
             $.getJSON("/2.0/getInmatesByDate.php?thisDay=" + thisDay, function(data){
                 $("#inmateBrief li").remove();
                 for (i=0; i < data.length; i++) {
@@ -54,7 +55,7 @@
                 }
                 $("#inmateBrief").listview("refresh");
             });
-            //jQuery.pageLoading(0);
+            $.mobile.pageLoading( true );
         }
         function loadData() {
             $.getJSON("/2.0/getDates.php", function(data) {
@@ -131,8 +132,8 @@
     <div id="inmateDetail" data-role="content" data-theme="b">
         <img id="inmate_detail_img" /><br />
         <span id="inmate_name"></span><span id="inmate_race"></span><span id="inmate_gender"></span><br />
-        Resides <span id="inmate_address">* premium service only* </span> <span id="inmate_city"></span>, <br />
-        <span id="inmate_state"></span> <span id="inmate_zip"></span><br />
+        Resides <span id="inmate_address"></span><br />
+        <span id="inmate_city"></span>, <span id="inmate_state"></span> <span id="inmate_zip"></span><br />
         Born <span id="inmate_birth"></span> <span id="inmate_hair"></span> <span id="inmate_eyes"></span><br />
         <span id="inmate_height"></span> tall <span id="inmate_weight"></span><br />
         Arrested by <span id="inmate_arrested_by"></span> with <span id="inmate_agency"></span><br />

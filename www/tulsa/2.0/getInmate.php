@@ -10,7 +10,7 @@ if($_GET['id']) {
     $result = mysql_query($query);
     $row = mysql_fetch_object($result);
     $row->race = $race_array[$row->race];
-    $row->gender = $row->gender = "M" ? "Male" : "Female";
+    $row->gender = $row->gender == "M" ? "Male" : "Female";
 
     echo json_encode($row);
     mysql_close();

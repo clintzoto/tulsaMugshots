@@ -1,7 +1,7 @@
 #!/usr/bin/python2.5
 import sys
 
-environ = 'prod'
+environ = 'dev'
 
 if environ == "dev":
     environDB = "dev"
@@ -48,8 +48,6 @@ def stealStuff(file_name,file_mode,base_url):
             f = urlopen(req)
             print "downloading " + url
             # Open our local file for writing
-            #local_file = open("../www/tulsa/mugs/" + file_name + ".jpg", "w" + file_mode)
-            #local_file = open("/kunden/homepages/37/d282226577/htdocs/" + environ "/www/tulsa/mugs/" + file_name + ".jpg", "w" + file_mode)
             local_file = open("/kunden/homepages/37/d282226577/htdocs/%s/www/tulsa/mugs/%s.jpg" % (environ, file_name), "w" + file_mode)
             #Write to our local file
             local_file.write(f.read())
@@ -69,16 +67,21 @@ def save_record(d):
     except Exception, e:
         print "db error: ", e
 
-
+def soupCatch(soup, soup_attr_val, soup_el="span", soup_attr="id"):
+    try:
+        return soup.find(soup_el, {soup_attr: soup_attr_val}).contents[0]
+    except Exception, e:
+        print "soup catch exception: %s for %s" % (e, soup_attr_val)
+        return "None"
 
 def getInmateLinks():
     try:
-        c.execute("SELECT id from %slatestPersonId" % (environDB))
-        last_valid_person_id = c.fetchone()
+#        c.execute("SELECT id from %slatestPersonId" % (environDB))
+#        last_valid_person_id = c.fetchone()
 
-        PERSON_ID_start = last_valid_person_id[0]
-        #PERSON_ID_start = 1273918
-        PERSON_ID_end = PERSON_ID_start + 500
+#        PERSON_ID_start = last_valid_person_id[0]
+        PERSON_ID_start = 1275993################
+        PERSON_ID_end = PERSON_ID_start + 1
     except Exception, e:
         print "get_id_range error: ", e
 
@@ -99,61 +102,47 @@ def getInmateLinks():
             if soup('img', {"id" : "InmatePhoto"}):
                 data={}
                 print "Hit:\tPERSON_ID = %d" % PERSON_ID_start
-
                 imgEl = soup.find('img', {"id": "InmatePhoto"})
                 stealStuff(str(PERSON_ID_start), "b", imgEl['src'])
                 data['personId'] = PERSON_ID_start
-                data['name'] = soup.find('span', {"id": "lblName"}).contents[0]
-                print "\t" + data['name']
-                data['gender'] = soup.find('span', {"id": "LblGender"}).contents[0]
-                data['race'] = soup.find('span', {"id": "lblRace"}).contents[0]
-                data['birthday'] = soup.find('span', {"id": "lblBirthDate"}).contents[0]
-                data['feet'] = soup.find('span', {"id": "lblHeightFeet"}).contents[0]
-                data['inches'] = soup.find('span', {"id": "lblHeightInches"}).contents[0]
-                data['weight'] = soup.find('span', {"id": "lblWeight"}).contents[0]
-                data['id'] = soup.find('span', {"id": "lblInmateID"}).contents[0]
-                data['hair'] = soup.find('span', {"id": "lblHairColor"}).contents[0]
-                data['eyes'] = soup.find('span', {"id": "lblEyeColor"}).contents[0]
-                data['address'] = soup.find('span', {"id": "lblAddress"}).contents[0]
-                data['city'] = soup.find('span', {"id": "lblCity"}).contents[0]
-                data['state'] = soup.find('span', {"id": "lblState"}).contents[0]
-                data['zip'] = soup.find('span', {"id": "lblzip"}).contents[0]
-                data['arrestDate'] = soup.find('span', {"id": "lblArrestDate"}).contents[0]
-                data['arrestTime'] = soup.find('span', {"id": "lblArrestTime"}).contents[0]
-                data['arrestBy'] = soup.find('span', {"id": "lblArrestBy"}).contents[0]
-                data['agency'] = soup.find('span', {"id": "lblAgency"}).contents[0]
-                
-                print data;
+                data['name'] = soupCatch(soup, "lblName")
+                print data['name']
+                data['gender'] = soupCatch(soup, "LblGender")
+                data['race'] = soupCatch(soup, "lblRace")
+                data['birthday'] = soupCatch(soup, "lblBirthDate")
+                data['feet'] = soupCatch(soup, "lblHeightFeet")
+                data['inches'] = soupCatch(soup, "lblHeightInches")
+                data['weight'] = soupCatch(soup, "lblWeight")
+                data['id'] = soupCatch(soup, "lblInmateID")
+                data['hair'] = soupCatch(soup, "lblHairColor")
+                data['eyes'] = soupCatch(soup, "lblEyeColor")
+                data['address'] = soupCatch(soup, "lblAddress")
+                data['city'] = soupCatch(soup, "lblCity")
+                data['state'] = soupCatch(soup, "lblState")
+                data['zip'] = soupCatch(soup, "lblzip")
+                data['arrestDate'] = soupCatch(soup, "lblArrestDate")
+                data['arrestTime'] = soupCatch(soup, "lblArrestTime")
+                data['arrestBy'] = soupCatch(soup, "lblArrestBy")
+                data['agency'] = soupCatch(soup, "lblAgency")
 
                 temp_date = string.split(soup.find('span', {"id": "lblBookingDate"}).contents[0], "/")
                 data['bookingDate'] = "%s-%s-%s" % (temp_date[2], temp_date[0], temp_date[1])
-                #print data['bookingDate'] 
-                data['bookingTime'] = soup.find('span', {"id": "lblBookingTime"}).contents[0]
+                print data['bookingDate'] 
+
+                data['bookingTime'] = soupCatch(soup, "lblBookingTime")
                 #cell = soup.find('span', {"id": "lblAssignedCellId"}).contents[0]
-                tbody = soup.find("table", {"id": "GridOffenses"}).findNext("tr").findNext("tr").findAll("font")
-                print tbody[0].string
-                data['charge'] = tbody[0].string
-                try:
-                    if tbody[0].string:
-                        data['charge'] = tbody[0].string
-                    else:
-                        data['charge'] = ""
-                    if tbody[1].string:
-                        data['charge2'] = tbody[1].string
-                    else:
-                        data['charge2'] = ""
-                    if tbody[2].string:
-                        data['charge3'] = tbody[2].string
-                    else:
-                        data['charge3'] = ""
-                        #data['charge2'] = tbody[0].string
-                        #data['charge3'] = tbody[0].string
-                    if tbody[4].string:
-                        data['bondAmt'] = tbody[4].string
-                    else:
-                        data['bondAmt'] = ""
-                except Exception, e:
-                    print "multiple charge issue:", e
+                #tbody = soup.find("table", {"id": "GridOffenses"}).findNext("tr").findNext("tr").findAll("font")
+                gridofoffenses = soup.find("table", {"id": "GridOffenses"}).findAll("tr")
+                #get rid of the first one, it is just column header
+                del gridofoffenses[0]
+                data['charges'] = []
+
+                for offense in gridofoffenses:
+                    off = offense.find("font").find(text=True)
+                    data['charges'].append(off)
+                
+                print data['charges']
+
                 recordsBlank = 0
                 save_record(data)
 
