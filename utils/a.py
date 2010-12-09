@@ -9,14 +9,14 @@ if environ == "dev":
     print "##########-----------This is development------------##############"
     print "##########               environ = %s                 ############" % (environ)
     print "##################################################################"
-    proceed = raw_input("Type Yes >")
-    if proceed != "Yes":
-        print "Nothing processed"
-        sys.exit()
+#    proceed = raw_input("Type Yes >")
+#    if proceed != "Yes":
+#        print "Nothing processed"
+#        sys.exit()
 else:
     environ = 'prod'
     environDB = ""
-
+import re
 import string
 import urllib2
 import urllib
@@ -76,12 +76,12 @@ def soupCatch(soup, soup_attr_val, soup_el="span", soup_attr="id"):
 
 def getInmateLinks():
     try:
-#        c.execute("SELECT id from %slatestPersonId" % (environDB))
-#        last_valid_person_id = c.fetchone()
+        c.execute("SELECT id from %slatestPersonId" % (environDB))
+        last_valid_person_id = c.fetchone()
 
-#        PERSON_ID_start = last_valid_person_id[0]
-        PERSON_ID_start = 1275993################
-        PERSON_ID_end = PERSON_ID_start + 1
+        PERSON_ID_start = last_valid_person_id[0]
+#        PERSON_ID_start = 1275993################
+        PERSON_ID_end = PERSON_ID_start + 100
     except Exception, e:
         print "get_id_range error: ", e
 
@@ -136,18 +136,47 @@ def getInmateLinks():
                 #get rid of the first one, it is just column header
                 del gridofoffenses[0]
                 data['charges'] = []
+                totalBond = 0
 
                 for offense in gridofoffenses:
                     off = offense.find("font").find(text=True)
-                    data['charges'].append(off)
-                
-                print data['charges']
+                    try:
+                        #get bond amount and drop change
+                        bnd = offense.findAll("font")[4].contents[0].split('.')
+                        #remove all nondigits and cast
+                        bond = int(re.sub("\D", "", bnd[0]))
+                        totalBond = totalBond + bond
 
+                        data['charges'].append(off)
+                    except Exception, e:
+                        print "crap: ", e
+
+                data['bondAmt'] = str(totalBond)
+                print data['bondAmt']
+                try:
+                    data['charge'] = data['charges'][0]
+                   # data['bondAmt'] = float(data['bondAmts'][0])
+                except Exception, e:
+                    print "oops: ", e
+                    data['charge'] = ""
+
+                try:
+                    data['charge2'] = data['charges'][1]
+                except Exception, e:
+                    print "oops: ", e
+                    data['charge2'] = ""
+
+                try:
+                    data['charge3'] = data['charges'][2]
+                except Exception, e:
+                    print "oops: ", e
+                    data['charge3'] = ""
+                    
+                
                 recordsBlank = 0
                 save_record(data)
-
+                print "foobarshit"
             else:
-                print "empty holder"
                 recordsBlank = recordsBlank + 1
         except Exception, e:
             print "there was an exception:", e
