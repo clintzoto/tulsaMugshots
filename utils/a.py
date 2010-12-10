@@ -72,7 +72,10 @@ def soupCatch(soup, soup_attr_val, soup_el="span", soup_attr="id"):
         return soup.find(soup_el, {soup_attr: soup_attr_val}).contents[0]
     except Exception, e:
         print "soup catch exception: %s for %s" % (e, soup_attr_val)
-        return "None"
+        if soup_attr_val == "zip" or soup_attr_val == "feet" or soup_attr_val == "inches" or soup_attr_val == "weight":
+            return 0
+        else:
+            return "None"
 
 def getInmateLinks():
     try:
