@@ -1,7 +1,7 @@
 #!/usr/bin/python2.5
 import sys
 
-environ = 'dev'
+environ = 'prod'
 
 if environ == "dev":
     environDB = "dev"
@@ -9,10 +9,10 @@ if environ == "dev":
     print "##########-----------This is development------------##############"
     print "##########               environ = %s                 ############" % (environ)
     print "##################################################################"
-#    proceed = raw_input("Type Yes >")
-#    if proceed != "Yes":
-#        print "Nothing processed"
-#        sys.exit()
+    proceed = raw_input("Type Yes >")
+    if proceed != "Yes":
+        print "Nothing processed"
+        sys.exit()
 else:
     environ = 'prod'
     environDB = ""
