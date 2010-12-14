@@ -16,6 +16,8 @@ if environ == "dev":
 else:
     environ = 'prod'
     environDB = ""
+print environ
+print environDB
 import re
 import string
 import urllib2
@@ -84,7 +86,7 @@ def getInmateLinks():
 
         PERSON_ID_start = last_valid_person_id[0]
 #        PERSON_ID_start = 1275993################
-        PERSON_ID_end = PERSON_ID_start + 100
+        PERSON_ID_end = PERSON_ID_start + 400
     except Exception, e:
         print "get_id_range error: ", e
 
@@ -96,9 +98,7 @@ def getInmateLinks():
         print "recordsBlank", recordsBlank
         if recordsBlank == 10:
             #after 10 blank records its safe to assume that the last entry was the last arrest for now
-            #update latestPersonId to the last records entry that will be the next PERSON_ID_start
-            c.execute("""UPDATE """ + environDB + """latestPersonId set id=(select max(personId + 1) from """ + environDB + """records)""")
-            sys.exit()
+            break
         try:
             page = urllib2.urlopen("%sid=%d" % (BASE_URL, PERSON_ID_start))
             soup = BeautifulSoup(page)
@@ -178,12 +178,12 @@ def getInmateLinks():
                 
                 recordsBlank = 0
                 save_record(data)
-                print "foobarshit"
+                print data
             else:
                 recordsBlank = recordsBlank + 1
         except Exception, e:
             print "there was an exception:", e
             #PERSON_ID_start = PERSON_ID_start + 1
         PERSON_ID_start = PERSON_ID_start + 1
-
+    c.execute("UPDATE %slatestPersonId set id=(select max(personId + 1) from %srecords)" % (environDB, environDB))
 getInmateLinks()
