@@ -37,14 +37,13 @@
         //
         $(document).ready(function() {
             loadData();
-            $(document.body).data('clint', 'awesome');
         });
 
         function loadData() {
             $.getJSON("/2.0/getDates.php", function(data) {
                 $("#dates li").remove();
                 for (i=0; i < data.length; i++) {
-                    var DatesItem = '<li id="datesItem"><a onclick="getInmatesByDate(\'' + data[i] + '\');" href="#inmateBriefs">' + data[i] + '</a></li>';
+                    var DatesItem = '<li id="datesItem"><a onclick="getInmatesByDate(\'' + data[i] + '\');">' + data[i] + '</a></li>';
                     $(DatesItem).appendTo("#dates");
                 }
                 $("#dates").listview("refresh");
@@ -52,25 +51,34 @@
         }
 
         function getInmatesByDate(thisDay) {
+            $("#inmateBrief li").remove();
             //$.mobile.pageLoading();
-            $.getJSON("/2.0/getInmatesByDate.php?thisDay=" + thisDay, function(data){
-                $("#inmateBrief li").remove();
-                buildInmateBriefs(thisDay, data);
-                $("#inmateBrief").listview("refresh");
-                buildInmateDetails(data);
-        
+            $.ajax({
+                url: "/2.0/getInmatesByDate.php",
+                dataType: 'json',
+                data: "thisDay=" + thisDay, 
+                success: function(data){
+                    buildInmateBriefs(thisDay, data);
+                    buildInmateDetails(data);
+                    $.mobile.changePage('#inmateBriefs',"slide",false,true);
+                    $("#inmateBrief").listview("refresh");
+                } 
             });
         }
-
+        
+        function gotoInmateDetails(personId) {
+                $.mobile.changePage('#inmateDetails',"slide",false,true);
+                $('#inmateDetail-' + personId).show();
+                console.log(personId);
+        }
         function buildInmateBriefs(thisDay, arrayDailyInmates) {
             for (i=0; i < arrayDailyInmates.length; i++) {
                 //build the listview
                 var split_name = arrayDailyInmates[i].name.split(",");
-                var inmate = "<li><a href='#inmateBrief'>"
+                var inmate = "<li><a onclick='gotoInmateDetails(" + arrayDailyInmates[i].personId  + "); return false;'>"
                     + "<img  src='/mugs/" + arrayDailyInmates[i].personId + ".jpg' />"
                     + split_name[0] + "<br />" + split_name[1] + "</a><br /><span style='color:white; font-size: 13px;'>" 
                     + arrayDailyInmates[i].bookingTime  + "</span></li>";
-                $(inmate).data("inmateId", arrayDailyInmates[i].personId);
                 $(inmate).appendTo("#inmateBrief");
             }
             //console.log($("#inmateBrief"));
@@ -79,17 +87,17 @@
         function buildInmateDetails(arrayDailyInmates) {
             $.each(arrayDailyInmates, function(index, obj) {
                     objTemplate = detailTemplateMerge(obj);
+                    console.log($(objTemplate));
                     $(objTemplate).bind('click', function(){
                         console.log('yay');
                     });
-                    $(objTemplate).appendTo($(document.body));
+                    $(objTemplate).appendTo($("#inmateDetails"));
 
             });
-            $('.ui-undefined ui-page-active').css("display", "block");
         }
 
         function detailTemplateMerge(objInmate) {
-            var strTemplate = '<div><div class="details" style="display: block;"><img id="inmate_detail_img" /><br /><span id="inmate_name"></span><span id="inmate_race"></span><span id="inmate_gender"></span><br />Resides <span id="inmate_address"></span><br /><span id="inmate_city"></span>, <span id="inmate_state"></span> <span id="inmate_zip"></span><br />Born <span id="inmate_birth"></span> <span id="inmate_hair"></span> <span id="inmate_eyes"></span><br /><span id="inmate_height"></span> tall <span id="inmate_weight"></span><br />Arrested by <span id="inmate_arrested_by"></span> with <span id="inmate_agency"></span><br />at <span id="inmate_arrest_time"></span> on <span id="inmate_arrest_date"></span> for <br /><span style="color: red;" id="inmate_charge"></span><br /><span style="color: red;" id="inmate_charge2"></span><br /><span style="color: red;" id="inmate_charge3"></span><br />Booked at <span id="inmate_book_time"><span> on <span id="inmate_book_date"></span><span id="inmate_bond"></span></div></div>';
+            var strTemplate = '<div class="details" style="display: none;"><img id="inmate_detail_img" /><br /><span id="inmate_name"></span><span id="inmate_race"></span><span id="inmate_gender"></span><br />Resides <span id="inmate_address"></span><br /><span id="inmate_city"></span>, <span id="inmate_state"></span> <span id="inmate_zip"></span><br />Born <span id="inmate_birth"></span> <span id="inmate_hair"></span> <span id="inmate_eyes"></span><br /><span id="inmate_height"></span> tall <span id="inmate_weight"></span><br />Arrested by <span id="inmate_arrested_by"></span> with <span id="inmate_agency"></span><br />at <span id="inmate_arrest_time"></span> on <span id="inmate_arrest_date"></span> for <br /><span style="color: red;" id="inmate_charge"></span><br /><span style="color: red;" id="inmate_charge2"></span><br /><span style="color: red;" id="inmate_charge3"></span><br />Booked at <span id="inmate_book_time"><span> on <span id="inmate_book_date"></span><span id="inmate_bond"></span></div>';
             //var strTemplate = '<div data-role="page" data-theme="b"><div data-role="header" data-position="inline"><h2 id="inmateDetailHeader">TULSA County</h2></div><div data-role="content"><img id="inmate_detail_img" /><br /><span id="inmate_name"></span><span id="inmate_race"></span><span id="inmate_gender"></span><br />Resides <span id="inmate_address"></span><br /><span id="inmate_city"></span>, <span id="inmate_state"></span> <span id="inmate_zip"></span><br />Born <span id="inmate_birth"></span> <span id="inmate_hair"></span> <span id="inmate_eyes"></span><br /><span id="inmate_height"></span> tall <span id="inmate_weight"></span><br />Arrested by <span id="inmate_arrested_by"></span> with <span id="inmate_agency"></span><br />at <span id="inmate_arrest_time"></span> on <span id="inmate_arrest_date"></span> for <br /><span style="color: red;" id="inmate_charge"></span><br /><span style="color: red;" id="inmate_charge2"></span><br /><span style="color: red;" id="inmate_charge3"></span><br />Booked at <span id="inmate_book_time"><span> on <span id="inmate_book_date"></span><span id="inmate_bond"></span></div><div data-role="footer"></div></div>';
             //console.log("strTemplate: " + strTemplate + " objInmate:" + objInmate);
             //console.log("detailTemplateMerge ARGS:");
@@ -148,7 +156,13 @@
         </ul>
     </div>
 </div>
-<div id="tempHolder"></div>
+<div data-role="page" data-thee="b" id="inmateDetails">
+    <div data-role="header">
+        <h2>TULSA County</h2>
+    </div>
+        <div data-role="content" id="inmateDetail">
+        </div>
+</div>
 </body>
 </html>
 
