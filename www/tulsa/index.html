@@ -34,19 +34,12 @@
     <link href="images/icons/icon.png" rel="apple-touch-icon" />
 
     <script>
-        
+        //
         $(document).ready(function() {
             loadData();
-            
-/*
-            $('#datesItem').live("click", function(){
-                $('#inmateBrief').html('<div>hello there</div>');
-                //alert("was clicked");
-            });        
-*/
-            //getInmatesByWeek();
-            //getInmatesByDate('2010/12/10');
+            $(document.body).data('clint', 'awesome');
         });
+
         function loadData() {
             $.getJSON("/2.0/getDates.php", function(data) {
                 $("#dates li").remove();
@@ -58,54 +51,51 @@
             });
         }
 
-        function buildInmateBriefs(thisDay, arrayDailyInmates) {
-                for (i=0; i < arrayDailyInmates.length; i++) {
-                    //build the listview
-                    var split_name = arrayDailyInmates[i].name.split(",");
-                    var inmate = "<li><a href='#tempHolder'>"
-                        + "<img  src='/mugs/" + arrayDailyInmates[i].personId + ".jpg' />"
-                        + split_name[0] + "<br />" + split_name[1] + "</a><br /><span style='color:white; font-size: 13px;'>" 
-                        + arrayDailyInmates[i].bookingTime  + "</span></li>";
-                    $(inmate).appendTo("#inmateBrief");
-                }
-        }
-
         function getInmatesByDate(thisDay) {
             //$.mobile.pageLoading();
             $.getJSON("/2.0/getInmatesByDate.php?thisDay=" + thisDay, function(data){
-/*
-                $("#inmateBrief li").remove();
-                for (i=0; i < data.length; i++) {
-                    //build the listview
-                    var split_name = data[i].name.split(",");
-                    var inmate = "<li><a onclick='buildInmateDetails(" + thisDay + "); return;' href='#tempHolder'>"
-                        + "<img  src='/mugs/" + data[i].personId + ".jpg' />"
-                        + split_name[0] + "<br />" + split_name[1] + "</a><br /><span style='color:white; font-size: 13px;'>" 
-                        + data[i].bookingTime  + "</span></li>";
-                    $(inmate).appendTo("#inmateBrief");
-                    //build the swipe view
-                    
-                }
-*/
-                //arrayDailyInmates = data;
-//                $("#inmateBrief").listview("refresh");
                 $("#inmateBrief li").remove();
                 buildInmateBriefs(thisDay, data);
                 $("#inmateBrief").listview("refresh");
                 buildInmateDetails(data);
+        
             });
         }
 
+        function buildInmateBriefs(thisDay, arrayDailyInmates) {
+            for (i=0; i < arrayDailyInmates.length; i++) {
+                //build the listview
+                var split_name = arrayDailyInmates[i].name.split(",");
+                var inmate = "<li><a href='#inmateBrief'>"
+                    + "<img  src='/mugs/" + arrayDailyInmates[i].personId + ".jpg' />"
+                    + split_name[0] + "<br />" + split_name[1] + "</a><br /><span style='color:white; font-size: 13px;'>" 
+                    + arrayDailyInmates[i].bookingTime  + "</span></li>";
+                $(inmate).data("inmateId", arrayDailyInmates[i].personId);
+                $(inmate).appendTo("#inmateBrief");
+            }
+            //console.log($("#inmateBrief"));
+        }
 
+        function buildInmateDetails(arrayDailyInmates) {
+            $.each(arrayDailyInmates, function(index, obj) {
+                    objTemplate = detailTemplateMerge(obj);
+                    $(objTemplate).bind('click', function(){
+                        console.log('yay');
+                    });
+                    $(objTemplate).appendTo($(document.body));
+
+            });
+            $('.ui-undefined ui-page-active').css("display", "block");
+        }
 
         function detailTemplateMerge(objInmate) {
-            var strTemplate = '<div id="inmateDetail"><img id="inmate_detail_img" /><br /><span id="inmate_name"></span><span id="inmate_race"></span><span id="inmate_gender"></span><br />Resides <span id="inmate_address"></span><br /><span id="inmate_city"></span>, <span id="inmate_state"></span> <span id="inmate_zip"></span><br />Born <span id="inmate_birth"></span> <span id="inmate_hair"></span> <span id="inmate_eyes"></span><br /><span id="inmate_height"></span> tall <span id="inmate_weight"></span><br />Arrested by <span id="inmate_arrested_by"></span> with <span id="inmate_agency"></span><br />at <span id="inmate_arrest_time"></span> on <span id="inmate_arrest_date"></span> for <br /><span style="color: red;" id="inmate_charge"></span><br /><span style="color: red;" id="inmate_charge2"></span><br /><span style="color: red;" id="inmate_charge3"></span><br />Booked at <span id="inmate_book_time"><span> on <span id="inmate_book_date"></span><span id="inmate_bond"></span>';
+            var strTemplate = '<div><div class="details" style="display: block;"><img id="inmate_detail_img" /><br /><span id="inmate_name"></span><span id="inmate_race"></span><span id="inmate_gender"></span><br />Resides <span id="inmate_address"></span><br /><span id="inmate_city"></span>, <span id="inmate_state"></span> <span id="inmate_zip"></span><br />Born <span id="inmate_birth"></span> <span id="inmate_hair"></span> <span id="inmate_eyes"></span><br /><span id="inmate_height"></span> tall <span id="inmate_weight"></span><br />Arrested by <span id="inmate_arrested_by"></span> with <span id="inmate_agency"></span><br />at <span id="inmate_arrest_time"></span> on <span id="inmate_arrest_date"></span> for <br /><span style="color: red;" id="inmate_charge"></span><br /><span style="color: red;" id="inmate_charge2"></span><br /><span style="color: red;" id="inmate_charge3"></span><br />Booked at <span id="inmate_book_time"><span> on <span id="inmate_book_date"></span><span id="inmate_bond"></span></div></div>';
+            //var strTemplate = '<div data-role="page" data-theme="b"><div data-role="header" data-position="inline"><h2 id="inmateDetailHeader">TULSA County</h2></div><div data-role="content"><img id="inmate_detail_img" /><br /><span id="inmate_name"></span><span id="inmate_race"></span><span id="inmate_gender"></span><br />Resides <span id="inmate_address"></span><br /><span id="inmate_city"></span>, <span id="inmate_state"></span> <span id="inmate_zip"></span><br />Born <span id="inmate_birth"></span> <span id="inmate_hair"></span> <span id="inmate_eyes"></span><br /><span id="inmate_height"></span> tall <span id="inmate_weight"></span><br />Arrested by <span id="inmate_arrested_by"></span> with <span id="inmate_agency"></span><br />at <span id="inmate_arrest_time"></span> on <span id="inmate_arrest_date"></span> for <br /><span style="color: red;" id="inmate_charge"></span><br /><span style="color: red;" id="inmate_charge2"></span><br /><span style="color: red;" id="inmate_charge3"></span><br />Booked at <span id="inmate_book_time"><span> on <span id="inmate_book_date"></span><span id="inmate_bond"></span></div><div data-role="footer"></div></div>';
             //console.log("strTemplate: " + strTemplate + " objInmate:" + objInmate);
             //console.log("detailTemplateMerge ARGS:");
             //console.log("strTemplate: " + strTemplate + ", objInmate: " + objInmate + ", curIndexDailyInmates: " + curIndexDailyInmates); 
             var objTemplate = $(strTemplate).clone();
             $(objTemplate).attr('id', "inmateDetail-" + objInmate.personId);
-            $(objTemplate).css('display', "none");
             $('#inmate_detail_img', objTemplate).attr('src', '/mugs/' + objInmate.personId + '.jpg');
             $('#inmate_name', objTemplate).html(objInmate.name);
             $("#inmate_address", objTemplate).html(objInmate.address);
@@ -133,29 +123,12 @@
             return objTemplate;
         }
         //build inmateDetail as a page for every arrest on thisDay and append it to the body 
-        function buildInmateDetails(arrayDailyInmates) {
-            //$.getJSON("/2.0/getInmate.php?id=" + id, function(d){
-            //detail = $(detailTemplate).clone();
-
-            $.each(arrayDailyInmates, function(index, obj) {
-                    //console.log("index: " +index+ "obj.name: " +obj.name);
-                    objTemplate = detailTemplateMerge(obj);
-                    $(objTemplate).appendTo($('#inmatePage'));
-                    //console.log("objTemplate : " +  $(objTemplate).html());
-                    $("#inmateBrief li").bind('click', function(e) {
-                         console.log(e);
-                        //swiped_id = this.id.split("-");
-                        //console.log("detail was left swiped" + swiped_id);
-                        //$(this.id).show();
-                    });
-            });
-        }
     </script>
 </head>
 <body> 
 
 <div data-role="page" data-theme="b" id="datePage">
-    <div data-role="header" data-position="inline">
+    <div data-role="header">
         <center><h2>TULSA County Inmates</h2></center>
     </div>
     <div data-role="content">
@@ -166,7 +139,7 @@
 </div>
 
 <div data-role="page" data-theme="b" id="inmateBriefs">
-    <div data-role="header" data-position="inline">
+    <div data-role="header">
         <h2 id="inmate_briefs_header">TULSA County</h2>
     </div>
     <div data-role="content">
@@ -175,110 +148,7 @@
         </ul>
     </div>
 </div>
-
-<div data-role="page" data-theme="b" id="tempHolder">
-    <div data-role="header" data-position="inline">
-        <h2>TULSA County</h2>
-    </div>
-    <div data-role="content">
-        <div id="inmatePage">
-        </div>
-    </div>
-</div>
-<!--
-<div data-role="page" data-theme="b" id="inmateDetails">
-    <div data-role="header">
-        <h2>TULSA County Inmate Details</h2>
-    </div>
-
-    <div id="inmateDetail" data-role="content" data-theme="b">
-        <img id="inmate_detail_img" /><br />
-        <span id="inmate_name"></span><span id="inmate_race"></span><span id="inmate_gender"></span><br />
-        Resides <span id="inmate_address"></span><br />
-        <span id="inmate_city"></span>, <span id="inmate_state"></span> <span id="inmate_zip"></span><br />
-        Born <span id="inmate_birth"></span> <span id="inmate_hair"></span> <span id="inmate_eyes"></span><br />
-        <span id="inmate_height"></span> tall <span id="inmate_weight"></span><br />
-        Arrested by <span id="inmate_arrested_by"></span> with <span id="inmate_agency"></span><br />
-        at <span id="inmate_arrest_time"></span> on <span id="inmate_arrest_date"></span> for <br />
-        <span style="color: red;" id="inmate_charge"></span><br />
-        <span style="color: red;" id="inmate_charge2"></span><br />
-        <span style="color: red;" id="inmate_charge3"></span><br />
-        Booked at <span id="inmate_book_time"><span> on <span id="inmate_book_date"></span><span id="inmate_bond"></span>
-    </div>
-    
-
-</div>
--->
-
-<script>
-/*
-            detail.appendTo($(document.body));
-            var d=dailyInmates[id];    
-                    $("#inmate_detail_img").attr('src', '/mugs/' + d.personId + '.jpg');
-                    $("#inmate_name").html(d.name);
-                    $("#inmate_address").html(d.address);
-                    $("#inmate_city").html(d.city);
-                    $("#inmate_state").html(d.state);
-                    $("#inmate_zip").html(d.zip);
-                    $("#inmate_arrest_date").html(d.arrestDate);
-                    $("#inmate_arrest_time").html(d.arrestTime);
-                    $("#inmate_arrested_by").html(d.arrestBy);
-                    $("#inmate_agency").html(d.agency);
-                    $("#inmate_book_date").html(d.bookingDate);
-                    $("#inmate_book_time").html(d.bookingTime);
-                    $("#inmate_charge").html(d.charge);
-                    $("#inmate_charge2").html(d.charge2);
-                    $("#inmate_charge3").html(d.charge3);
-                    $("#inmate_bond").html(d.bondAmt);
-                    $("#inmate_birth").html(d.birthday);
-                    $("#inmate_hair").html(d.hair);
-                    $("#inmate_eyes").html(d.eyes);
-                    $("#inmate_height").html(d.feet + "ft " + d.inches + "in");
-                    $("#inmate_weight").html(d.weight + " lbs");
-                    $("#inmate_race").html(" " + d.race + " ");
-                    $("#inmate_gender").html(d.gender);
-*/
-
-/*
-                    $("#inmate_detail_img").attr('src', '/mugs/' + d.personId + '.jpg');
-                    $("#inmate_name").html(d.name);
-                    $("#inmate_address").html(d.address);
-                    $("#inmate_city").html(d.city);
-                    $("#inmate_state").html(d.state);
-                    $("#inmate_zip").html(d.zip);
-                    $("#inmate_arrest_date").html(d.arrestDate);
-                    $("#inmate_arrest_time").html(d.arrestTime);
-                    $("#inmate_arrested_by").html(d.arrestBy);
-                    $("#inmate_agency").html(d.agency);
-                    $("#inmate_book_date").html(d.bookingDate);
-                    $("#inmate_book_time").html(d.bookingTime);
-                    $("#inmate_charge").html(d.charge);
-                    $("#inmate_charge2").html(d.charge2);
-                    $("#inmate_charge3").html(d.charge3);
-                    $("#inmate_bond").html(d.bondAmt);
-                    $("#inmate_birth").html(d.birthday);
-                    $("#inmate_hair").html(d.hair);
-                    $("#inmate_eyes").html(d.eyes);
-                    $("#inmate_height").html(d.feet + "ft " + d.inches + "in");
-                    $("#inmate_weight").html(d.weight + " lbs");
-                    $("#inmate_race").html(" " + d.race + " ");
-                    $("#inmate_gender").html(d.gender);
-            */
-            //});
-            //jQuery.pageLoading(0);
-/*
-            $('#inmateDetail').unbind('swipeleft');
-            $('#inmateDetail').unbind('swiperight');
-            $('#inmateDetail').bind('swipeleft', function() {
-            $.mobile.changePage($("#inmateDetail"), "slide", true, true);
-                getInmateDetails(id + 1);
-            });
-            $.mobile.changePage($("#inmateDetail"), "slide", false, true);
-            $('#inmateDetail').bind('swiperight', function() {
-                getInmateDetails(id - 1);
-            });
-*/
-</script>
+<div id="tempHolder"></div>
 </body>
 </html>
 

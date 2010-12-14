@@ -1,7 +1,7 @@
 #!/usr/bin/python2.5
 import sys
 
-environ = 'prod'
+environ = 'dev'
 
 if environ == "dev":
     environDB = "dev"
