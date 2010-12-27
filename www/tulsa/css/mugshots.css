@@ -1,0 +1,6 @@
+#inmate_detail_img {width: 290px;}
+.ui-mobile a img, .ui-mobile fieldset {height: 85px; margin-top: 5px; margin-left: 5px;}
+.ui-li-has-thumb .ui-btn-inner { min-height: 100px; padding-left: 130px;}
+.ui-li-has-thumb .ui-btn-inner { min-height: 72px;}
+.ui-li-thumb, .ui-li-icon { max-width: 140px; max-height:140px;}
+
