@@ -21,7 +21,7 @@
 
 */
     function loadData() {
-        $.getJSON("/2.0/getDates.php", function(data) {
+        $.getJSON("/tulsa/2.0/getDates.php", function(data) {
             $("#dates li").remove();
             for (i=0; i < data.length; i++) {
                var DatesItem = '<li id="datesItem"><a onclick="getInmatesByDate(\'' + data[i][1] + '\'); return true;" href="#inmateBriefs">' + data[i][1] + '</a><span class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + data[i][0] + '</span></span>';
@@ -37,7 +37,7 @@
         //$.mobile.pageLoading();
         $.mobile.pageLoading();
         $.ajax({
-            url: "/2.0/getInmatesByDate.php",
+            url: "/tulsa/2.0/getInmatesByDate.php",
                 dataType: 'json',
                 data: "thisDay=" + thisDay, 
                 async: false,
