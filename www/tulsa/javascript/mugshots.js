@@ -66,7 +66,7 @@
                 //build the listview
                 var split_name = arrayDailyInmates[i].name.split(",");
                 var inmate = "<li><a onclick='gotoInmateDetails(" + arrayDailyInmates[i].personId  + ");' href='#inmateDetails' >"
-                    + "<img  src='/mugs/" + arrayDailyInmates[i].personId + ".jpg' />"
+                    + "<img  src='/tulsa/mugs/" + arrayDailyInmates[i].personId + ".jpg' />"
                     + split_name[0] + "<br />" + split_name[1] + "</a><br /><span style='color:white; font-size: 13px;'>" 
                     + arrayDailyInmates[i].bookingTime  
                     + "</span>"
@@ -109,7 +109,7 @@
                 '<span id="inmate_bond"></span></div>';
             var objTemplate = $(strTemplate).clone();
             $(objTemplate).attr('id', "inmateDetail-" + objInmate.personId);
-            $('#inmate_detail_img', objTemplate).attr('src', '/mugs/' + objInmate.personId + '.jpg');
+            $('#inmate_detail_img', objTemplate).attr('src', '/tulsa/mugs/' + objInmate.personId + '.jpg');
             $('#inmate_name', objTemplate).html(objInmate.name);
             $("#inmate_address", objTemplate).html(objInmate.address);
             $("#inmate_city", objTemplate).html(objInmate.city);
