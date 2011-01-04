@@ -70,7 +70,6 @@
                     + split_name[0] + "<br />" + split_name[1] + "</a><br /><span style='color:white; font-size: 13px;'>" 
                     + arrayDailyInmates[i].bookingTime  
                     + "</span>"
-                    + arrayDailyInmates[i].update_image_link
                     + "</li>";
                 $(inmate).appendTo("#inmateBrief");
             }
@@ -109,6 +108,10 @@
                 '<span id="inmate_bond"></span></div>';
             var objTemplate = $(strTemplate).clone();
             $(objTemplate).attr('id', "inmateDetail-" + objInmate.personId);
+            if(objInmate.refetch_link) {
+               
+                $(objTemplate).append("<br /><a href='javascript:void(0);' onclick='ajax_refetch(" + objInmate.personId + ");'>refetch info</a>");
+            }
             $('#inmate_detail_img', objTemplate).attr('src', '/tulsa/mugs/' + objInmate.personId + '.jpg');
             $('#inmate_name', objTemplate).html(objInmate.name);
             $("#inmate_address", objTemplate).html(objInmate.address);
@@ -136,4 +139,14 @@
             return objTemplate;
       }
 
+//Admin function: if the inmate info is incomplete this will refetch it
+//calls ajax_refetch.php wich calls refetch.py
+//nothing is returned
 
+    function ajax_refetch(person_id) {
+        
+        $.get("/tulsa/2.0/callRefetch.php?person_id="+person_id, function(data) {
+            console.log(data);
+        });
+        
+    }

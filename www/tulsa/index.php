@@ -1,4 +1,3 @@
-<?php session_start();?>
 <!DOCTYPE html> 
 <html> 
 <head>
@@ -17,7 +16,9 @@
 <script src="javascript/mugshots.js"></script>
 </head>
 <body> 
-
+<style>
+#inmate_detail_img {width: auto;}
+</style>
 <div data-role="page" data-theme="b" id="datePage">
     <div data-role="header">
         <center><h2>TULSA County Inmates</h2></center>
@@ -35,6 +36,9 @@
     <div data-role="content">
         <ul id="inmateBrief" data-role="listview" data-theme="b">
         </ul>
+    </div>
+    <div data-role="header">
+        <h2>&nbsp;</h3>
     </div>
 </div>
 <div data-role="page" data-theme="b" id="inmateDetails">
