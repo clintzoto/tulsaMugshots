@@ -2,9 +2,9 @@
 if($_GET['id']) {
     $subdomain = explode(".", $_SERVER['HTTP_HOST']);
     $environ = $subdomain[0] == 'dev' ? 'dev' : '';
-    $con = mysql_connect("db2536.perfora.net", "dbo336192140", "tulsafoobar");
+    $con = mysql_connect("", "", "");
     if (!$con) die('Could not connect to database: ' . mysql_error());
-    mysql_select_db("db336192140", $con);
+    mysql_select_db("", $con);
 
     $race_array = array("W"=>"White", "B"=>"Black", "H"=>"Hispanic", "I"=>"Pacific Islander", "O"=>"Other");
 

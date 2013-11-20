@@ -1,8 +1,8 @@
 <?php
 
-$con = mysql_connect("db2536.perfora.net", "dbo336192140", "tulsafoobar");
+$con = mysql_connect("", "", "");
 if (!$con) die('Could not connect to database: ' . mysql_error());
-mysql_select_db("db336192140", $con);
+mysql_select_db("", $con);
 session_start();
 
 if($_SERVER['REQUEST_METHOD'] == "POST") {

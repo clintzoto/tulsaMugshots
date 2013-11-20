@@ -3,19 +3,19 @@ import sys
 
 environ = 'dev'
 
-#if environ == "dev":
-environDB = "dev"
-#    print "##################################################################"
-#    print "##########-----------This is development------------##############"
-#    print "##########               environ = %s                 ############" % (environ)
-#    print "##################################################################"
-#    proceed = raw_input("Type Yes >")
-#    if proceed != "Yes":
-#        print "Nothing processed"
-#        sys.exit()
-#else:
-#    environ = 'prod'
-#    environDB = ""
+if environ == "dev":
+    environDB = "dev"
+    print "##################################################################"
+    print "##########-----------This is development------------##############"
+    print "##########               environ = %s                 ############" % (environ)
+    print "##################################################################"
+    proceed = raw_input("Type Yes >")
+    if proceed != "Yes":
+        print "Nothing processed"
+        sys.exit()
+else:
+    environ = 'prod'
+    environDB = ""
 print environ
 print environDB
 import re
@@ -32,7 +32,6 @@ from BeautifulSoup import BeautifulSoup
 from datetime import datetime
 import time
 from urllib2 import Request, urlopen, URLError, HTTPError
-import time
 
 #start_time = datetime.now();
 
@@ -64,7 +63,6 @@ def stealStuff(file_name,file_mode,base_url):
                 render_thumb(file_name + "-" + mugshotHash + ".jpg", absPath, "112x34", absPath + "/thumbs85x85", "shave")
                 render_thumb(file_name + "-" + mugshotHash + ".jpg", absPath + "/thumbs85x85", "85x85", absPath + "/thumbs85x85", "resize")
                 render_thumb(file_name + "-" + mugshotHash + ".jpg", absPath, "320x320", absPath + "/thumbs320", "resize")
-                time.sleep(3)
                 
                 local_file.close()
             print "mugshot Hash: " + mugshotHash
@@ -113,8 +111,8 @@ def getInmateLinks(refetchValue=None):
             c.execute("SELECT id from %slatestPersonId" % (environDB))
             last_valid_person_id = c.fetchone()
 
-    #        PERSON_ID_start = last_valid_person_id[0]
-            PERSON_ID_start = 20130131103
+            PERSON_ID_start = last_valid_person_id[0]
+    #        PERSON_ID_start = 1275993################
             PERSON_ID_end = PERSON_ID_start + 400
         except Exception, e:
             print "get_id_range error: ", e
@@ -125,7 +123,7 @@ def getInmateLinks(refetchValue=None):
     while  PERSON_ID_start < PERSON_ID_end:
         print PERSON_ID_start
         print "recordsBlank", recordsBlank
-        if recordsBlank == 300:
+        if recordsBlank == 10:
             #after 10 blank records its safe to assume that the last entry was the last arrest for now
             break
         try:

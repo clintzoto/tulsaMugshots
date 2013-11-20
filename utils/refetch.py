@@ -20,7 +20,7 @@ from datetime import datetime
 import time
 from urllib2 import Request, urlopen, URLError, HTTPError
 
-conn = MySQLdb.connect(host='db2536.perfora.net', user='dbo336192140', passwd='tulsafoobar', db='db336192140')
+conn = MySQLdb.connect(host='', user='', passwd='', db='')
 c = conn.cursor()
 # this saves the binary image to /tulsa/mugs
 def stealStuff(file_name,file_mode,base_url):
