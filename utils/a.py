@@ -3,19 +3,19 @@ import sys
 
 environ = 'dev'
 
-if environ == "dev":
-    environDB = "dev"
-    print "##################################################################"
-    print "##########-----------This is development------------##############"
-    print "##########               environ = %s                 ############" % (environ)
-    print "##################################################################"
-    proceed = raw_input("Type Yes >")
-    if proceed != "Yes":
-        print "Nothing processed"
-        sys.exit()
-else:
-    environ = 'prod'
-    environDB = ""
+#if environ == "dev":
+environDB = "dev"
+#    print "##################################################################"
+#    print "##########-----------This is development------------##############"
+#    print "##########               environ = %s                 ############" % (environ)
+#    print "##################################################################"
+#    proceed = raw_input("Type Yes >")
+#    if proceed != "Yes":
+#        print "Nothing processed"
+#        sys.exit()
+#else:
+#    environ = 'prod'
+#    environDB = ""
 print environ
 print environDB
 import re
@@ -32,6 +32,7 @@ from BeautifulSoup import BeautifulSoup
 from datetime import datetime
 import time
 from urllib2 import Request, urlopen, URLError, HTTPError
+import time
 
 #start_time = datetime.now();
 
@@ -49,11 +50,26 @@ def stealStuff(file_name,file_mode,base_url):
         try:
             f = urlopen(req)
             print "downloading " + url
-            # Open our local file for writing
-            local_file = open("/kunden/homepages/37/d282226577/htdocs/%s/www/tulsa/mugs/%s.jpg" % (environ, file_name), "w" + file_mode)
-            #Write to our local file
-            local_file.write(f.read())
-            local_file.close()
+            bin_f = f.read()
+            mugshotHash = md5.md5(bin_f).hexdigest()
+            if mugshotHash == "cd8bb1bfb0bbe4edb2baba7429ca7eca":
+                mugshotHash = "no_photo"
+            else:
+                # Open our local file for writing
+                local_file = open("/kunden/homepages/37/d282226577/htdocs/%s/www/tulsa/mugs/%s-%s.jpg" % (environ, file_name, mugshotHash), "w" + file_mode)
+                #Write to our local file
+                local_file.write(bin_f)
+                #resize and crop thumbs
+                absPath = "/kunden/homepages/37/d282226577/htdocs/" + environ + "/www/tulsa/mugs"
+                render_thumb(file_name + "-" + mugshotHash + ".jpg", absPath, "112x34", absPath + "/thumbs85x85", "shave")
+                render_thumb(file_name + "-" + mugshotHash + ".jpg", absPath + "/thumbs85x85", "85x85", absPath + "/thumbs85x85", "resize")
+                render_thumb(file_name + "-" + mugshotHash + ".jpg", absPath, "320x320", absPath + "/thumbs320", "resize")
+                time.sleep(3)
+                
+                local_file.close()
+            print "mugshot Hash: " + mugshotHash
+            f.close()
+            return mugshotHash
 
         #handle errors
         except HTTPError, e:
@@ -61,10 +77,18 @@ def stealStuff(file_name,file_mode,base_url):
         except URLError, e:
             print "URL Error:",e.reason , url
 
+def render_thumb(imgFilename, originalDir, size_format, renderDir, imgFunc):
+    #/kunden/homepages/37/d282226577/htdocs/dev/www/tulsa/mugs/
+    createRender = "convert %s/%s -%s %s %s/%s" % (originalDir, imgFilename, imgFunc, size_format, renderDir, imgFilename)
+    subprocess.call(createRender, shell=True)
+    
+
     
 def save_record(d):
     try:
-        c.execute("""insert ignore into """ + environDB + """records (personId, name, gender, race, birthday, feet, inches, weight, id, hair, eyes, address, city, state, zip, arrestDate, arrestTime, arrestBy, agency, bookingDate, bookingTime, charge, charge2, charge3, bondAmt) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""", (d['personId'], d['name'], d['gender'], d['race'], d['birthday'], d['feet'], d['inches'], d['weight'], d['id'], d['hair'], d['eyes'], d['address'], d['city'], d['state'], d['zip'], d['arrestDate'], d['arrestTime'], d['arrestBy'], d['agency'], d['bookingDate'], d['bookingTime'], d['charge'], d['charge2'], d['charge3'], d['bondAmt']))
+       c.execute("""insert into """ + environDB + """records (personId, mugshotHash, name, gender, race, birthday, feet, inches, weight, id, hair, eyes, address, city, state, zip, arrestDate, arrestTime, arrestBy, agency, bookingDate, bookingTime, charge, charge2, charge3, bondAmt) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE name=VALUES(name), mugshotHash=VALUES(mugshotHash), gender=VALUES(gender), race=VALUES(race), birthday=VALUES(birthday), feet=VALUES(feet), inches=VALUES(inches), weight=VALUES(weight), id=VALUES(id), hair=VALUES(hair), eyes=VALUES(eyes), address=VALUES(address), city=VALUES(city), zip=VALUES(zip), arrestDate=VALUES(arrestDate), arrestTime=VALUES(arrestTime), arrestBy=VALUES(arrestBy), agency=VALUES(agency), bookingDate=VALUES(bookingDate), bookingTime=VALUES(bookingTime), charge=VALUES(charge), charge2=VALUES(charge2), charge3=VALUES(charge3), bondAmt=VALUES(bondAmt)""", (d['personId'], d['mugshotHash'], d['name'], d['gender'], d['race'], d['birthday'], d['feet'], d['inches'], d['weight'], d['id'], d['hair'], d['eyes'], d['address'], d['city'], d['state'], d['zip'], d['arrestDate'], d['arrestTime'], d['arrestBy'], d['agency'], d['bookingDate'], d['bookingTime'], d['charge'], d['charge2'], d['charge3'], d['bondAmt']))
+
+#        c.execute("""insert ignore into """ + environDB + """records (personId, mugshotHash, name, gender, race, birthday, feet, inches, weight, id, hair, eyes, address, city, state, zip, arrestDate, arrestTime, arrestBy, agency, bookingDate, bookingTime, charge, charge2, charge3, bondAmt) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""", (d['personId'], d['mugshotHash'], d['name'], d['gender'], d['race'], d['birthday'], d['feet'], d['inches'], d['weight'], d['id'], d['hair'], d['eyes'], d['address'], d['city'], d['state'], d['zip'], d['arrestDate'], d['arrestTime'], d['arrestBy'], d['agency'], d['bookingDate'], d['bookingTime'], d['charge'], d['charge2'], d['charge3'], d['bondAmt']))
 
     except Exception, e:
         print "db error: ", e
@@ -79,16 +103,21 @@ def soupCatch(soup, soup_attr_val, soup_el="span", soup_attr="id"):
         else:
             return "None"
 
-def getInmateLinks():
-    try:
-        c.execute("SELECT id from %slatestPersonId" % (environDB))
-        last_valid_person_id = c.fetchone()
+def getInmateLinks(refetchValue=None):
+    if refetchValue:
+        print refetchValue
+        PERSON_ID_start = refetchValue
+        PERSON_ID_end = refetchValue + 1
+    else:
+        try:
+            c.execute("SELECT id from %slatestPersonId" % (environDB))
+            last_valid_person_id = c.fetchone()
 
-        PERSON_ID_start = last_valid_person_id[0]
-#        PERSON_ID_start = 1275993################
-        PERSON_ID_end = PERSON_ID_start + 400
-    except Exception, e:
-        print "get_id_range error: ", e
+    #        PERSON_ID_start = last_valid_person_id[0]
+            PERSON_ID_start = 20130131103
+            PERSON_ID_end = PERSON_ID_start + 400
+        except Exception, e:
+            print "get_id_range error: ", e
 
     BASE_URL = "http://iic.tulsacounty.org/InmateDetails.aspx?" 
     
@@ -96,7 +125,7 @@ def getInmateLinks():
     while  PERSON_ID_start < PERSON_ID_end:
         print PERSON_ID_start
         print "recordsBlank", recordsBlank
-        if recordsBlank == 10:
+        if recordsBlank == 300:
             #after 10 blank records its safe to assume that the last entry was the last arrest for now
             break
         try:
@@ -106,7 +135,7 @@ def getInmateLinks():
                 data={}
                 print "Hit:\tPERSON_ID = %d" % PERSON_ID_start
                 imgEl = soup.find('img', {"id": "InmatePhoto"})
-                stealStuff(str(PERSON_ID_start), "b", imgEl['src'])
+                data['mugshotHash'] = mugshotHash = stealStuff(str(PERSON_ID_start), "b", imgEl['src'])
                 data['personId'] = PERSON_ID_start
                 data['name'] = soupCatch(soup, "lblName")
                 print data['name']
@@ -185,5 +214,8 @@ def getInmateLinks():
             print "there was an exception:", e
             #PERSON_ID_start = PERSON_ID_start + 1
         PERSON_ID_start = PERSON_ID_start + 1
-    c.execute("UPDATE %slatestPersonId set id=(select max(personId + 1) from %srecords)" % (environDB, environDB))
+    if not refetchValue:
+        c.execute("UPDATE %slatestPersonId set id=(select max(personId + 1) from %srecords)" % (environDB, environDB))
 getInmateLinks()
+
+

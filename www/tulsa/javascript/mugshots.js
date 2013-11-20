@@ -1,152 +1,150 @@
     //
-    $(document).ready(function() {
-        loadData();
-    });
-
-/*
-    function adjustStyle(width) {
-        width = parseInt(width);
-        if (width < 481) {
-            $("#size-stylesheet").attr("href", "css/size-small.css");
-        } else {
-           $("#size-stylesheet").attr("href", "css/size-wide.css");
+function daySession() {
+    this.day;
+    this.inmates;
+    this.currInmateDetail;
+    this.offset = 0;
+    this.nextOffset = function() {
+        this.offset = this.offset + 20;
+    }
+    this.updateInmates = function(im) {
+        for (r in im) {
+            this.inmates.push(im[r]);
         }
     }
-    $(function() {
-        adjustStyle($(this).width());
-        $(window).resize(function() {
-            adjustStyle($(this).width());
-        });
+
+    this.returnOffset = returnOffset;
+    this.returnDay = returnDay;
+    this.returnInmates = returnInmates; 
+    this.returnCurrInmateDetail = returnCurrInmateDetail;
+
+    function returnOffset() { return this.offset }
+    function returnDay() { return this.day; }
+    function returnInmates() { return this.inmates; }
+    function returnCurrInmateDetail() {return this.inmates[this.currInmateDetail]; }
+} 
+    var blah = new daySession();
+
+$.getJSON("/tulsa/2.0/getDates.php", function(data) {
+    buildDatesLi(data);
+});
+
+function buildDatesLi(data) {
+    var iloop = data.length;
+    while(iloop--) {
+       var DatesItem = '<li data-value="' + data[iloop][1] + '" id="datesItem"><a href="#inmateBriefs">' 
+            + data[iloop][1] + '</a><span class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + data[iloop][0] + '</span></li>';
+       $(DatesItem).prependTo("#dates");
+    }
+    $("#dates").listview("refresh");
+}
+
+function getInmatesByDate(thisDay) {
+    $("#inmateBrief").empty();   
+    $.ajax({
+        url: "/tulsa/2.0/getInmatesByDate.php",
+        dataType: 'json',
+        data: "thisDay=" + thisDay, 
+        async: false,
+        success: function(data){
+            //blah.updateInmates(data);
+            daySession.prototype.inmates = data;
+            return true;
+        }
     });
-
-*/
-    function loadData() {
-        $.getJSON("/tulsa/2.0/getDates.php", function(data) {
-            $("#dates li").remove();
-            for (i=0; i < data.length; i++) {
-               var DatesItem = '<li id="datesItem"><a onclick="getInmatesByDate(\'' + data[i][1] + '\'); return true;" href="#inmateBriefs">' + data[i][1] + '</a><span class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + data[i][0] + '</span></span>';
-                $(DatesItem).appendTo("#dates");
-            }
-            $("#dates").listview("refresh");
-        });
-    }
-
-
-    function getInmatesByDate(thisDay) {
-        $("#inmateBrief li").remove();
-        //$.mobile.pageLoading();
-        $.mobile.pageLoading();
-        $.ajax({
-            url: "/tulsa/2.0/getInmatesByDate.php",
-                dataType: 'json',
-                data: "thisDay=" + thisDay, 
-                async: false,
-                success: function(data){
-                    buildInmateBriefs(thisDay, data);
-                    buildInmateDetails(data);
-                    //$.mobile.changePage('inmateBriefs',"slide", true, false);
-                    $.mobile.pageLoading( true );
-                } 
-            });
-            $("#inmateBrief").listview("refresh");
-      }
-
-
-
-
-      function gotoInmateDetails(personId) {
-                //$.mobile.changePage('inmateDetails',"slide",false,true);
-                $(".details").hide();
-                $('#inmateDetail-' + personId).show();
-
-      }
-
-      function buildInmateBriefs(thisDay, arrayDailyInmates) {
-            for (i=0; i < arrayDailyInmates.length; i++) {
+}
+function refresh() {
+  //  if(buildInmateBriefs()){
+   //     $("#inmateBriefs").show();
+        $("#inmateBrief").listview("refresh");
+  //  }
+}
+function updateInmatesByDate() {
+    blah.nextOffset();
+    thisDay = blah.returnDay();
+    offset = blah.returnOffset();
+    $.ajax({
+        url: "/tulsa/2.0/getInmatesByDate.php",
+        dataType: 'json',
+        data: "thisDay=" + thisDay + "&offset=" + offset, 
+        async: false,
+        success: function(inmates){
+            blah.updateInmates(inmates.reverse());
+            iloop = inmates.length;
+            while(iloop--) {
                 //build the listview
-                var split_name = arrayDailyInmates[i].name.split(",");
-                var inmate = "<li><a onclick='gotoInmateDetails(" + arrayDailyInmates[i].personId  + ");' href='#inmateDetails' >"
-                    + "<img  src='/tulsa/mugs/" + arrayDailyInmates[i].personId + ".jpg' />"
-                    + split_name[0] + "<br />" + split_name[1] + "</a><br /><span style='color:white; font-size: 13px;'>" 
-                    + arrayDailyInmates[i].bookingTime  
-                    + "</span>"
-                    + "</li>";
-                $(inmate).appendTo("#inmateBrief");
+                //php that loads arrayDailyInmates checks to for generic no_photo.jpg and updates mugshotHash with no_photo
+                //this prevents records with no photos from creating a new image file when there is no photo
+                var mugImageLink = inmates[iloop].mugshotHash == "no_photo" ? "no_photo" : inmates[iloop].personId + "-" + inmates[iloop].mugshotHash;  
+                var split_name = inmates[iloop].name.split(",");
+                var inmate = "<li data-value='" + (iloop + offset)  + "'><a  href='#inmateDetails' >"
+                    + "<img  src='/tulsa/mugs/thumbs85x85/" + mugImageLink + ".jpg' />"
+                    + split_name[0] + "<br />" + split_name[1] 
+                    + "<br /><span style='color:white; font-size: 13px;'>" 
+                    + inmates[iloop].bookingTime + "</span>" + "</a></li>";
+                $(inmate).appendTo("#inmateBrief:first-child");
             }
-            //console.log($("#inmateBrief"));
-      }
+        }
+    });
+    refresh();
+}
 
-      function buildInmateDetails(arrayDailyInmates) {
-            $.each(arrayDailyInmates, function(index, obj) {
-                    objTemplate = detailTemplateMerge(obj);
-                    $(objTemplate).appendTo($("#inmateDetail"));
-
-            });
-            $('.details').bind('swipeleft', function(e){
-                $(e.currentTarget).hide('slide');
-                $(e.currentTarget.previousSibling).show('slide');
-             
-/*
-                $(e.currentTarget).hide();
-                $(e.currentTarget.previousSibling).show();
-*/
-            });
-            $('.details').bind('swiperight', function(e){
-                $(e.currentTarget).hide('slide');
-                $(e.currentTarget.nextSibling).show('slide');
-            });
-      }
-
-      function detailTemplateMerge(objInmate) {
-            var strTemplate = '<div class="details" style="display: none;"><img id="inmate_detail_img" /><br /><span id="inmate_name"></span>' + 
-                '<span id="inmate_race"></span><span id="inmate_gender"></span><br />Resides <span id="inmate_address"></span><br /><span id="inmate_city"></span>' + 
-                ', <span id="inmate_state"></span> <span id="inmate_zip"></span><br />Born <span id="inmate_birth"></span> <span id="inmate_hair"></span> ' + 
-                '<span id="inmate_eyes"></span><br /><span id="inmate_height"></span> tall <span id="inmate_weight"></span><br />Arrested by <span id="inmate_arrested_by">' + 
-                '</span> with <span id="inmate_agency"></span><br />at <span id="inmate_arrest_time"></span> on <span id="inmate_arrest_date"></span> for <br />' +
-                '<span style="color: red;" id="inmate_charge"></span><br /><span style="color: red;" id="inmate_charge2"></span><br />' +
-                '<span style="color: red;" id="inmate_charge3"></span><br />Booked at <span id="inmate_book_time"><span> on <span id="inmate_book_date"></span>' +
-                '<span id="inmate_bond"></span></div>';
-            var objTemplate = $(strTemplate).clone();
-            $(objTemplate).attr('id', "inmateDetail-" + objInmate.personId);
-            if(objInmate.refetch_link) {
-               
-                $(objTemplate).append("<br /><a href='javascript:void(0);' onclick='ajax_refetch(" + objInmate.personId + ");'>refetch info</a>");
-            }
-            $('#inmate_detail_img', objTemplate).attr('src', '/tulsa/mugs/' + objInmate.personId + '.jpg');
-            $('#inmate_name', objTemplate).html(objInmate.name);
-            $("#inmate_address", objTemplate).html(objInmate.address);
-            $("#inmate_city", objTemplate).html(objInmate.city);
-            $("#inmate_state", objTemplate).html(objInmate.state);
-            $("#inmate_zip", objTemplate).html(objInmate.zip);
-            $("#inmate_arrest_date", objTemplate).html(objInmate.arrestDate);
-            $("#inmate_arrest_time", objTemplate).html(objInmate.arrestTime);
-            $("#inmate_arrested_by", objTemplate).html(objInmate.arrestBy);
-            $("#inmate_agency", objTemplate).html(objInmate.agency);
-            $("#inmate_book_date", objTemplate).html(objInmate.bookingDate);
-            $("#inmate_book_time", objTemplate).html(objInmate.bookingTime);
-            $("#inmate_charge", objTemplate).html(objInmate.charge);
-            $("#inmate_charge2", objTemplate).html(objInmate.charge2);
-            $("#inmate_charge3", objTemplate).html(objInmate.charge3);
-            $("#inmate_bond", objTemplate).html(objInmate.bondAmt);
-            $("#inmate_birth", objTemplate).html(objInmate.birthday);
-            $("#inmate_hair", objTemplate).html(objInmate.hair);
-            $("#inmate_eyes", objTemplate).html(objInmate.eyes);
-            $("#inmate_height", objTemplate).html(objInmate.feet + "ft " + objInmate.inches + "in");
-            $("#inmate_weight", objTemplate).html(objInmate.weight + " lbs");
-            $("#inmate_race", objTemplate).html(" " + objInmate.race + " ");
-            $("#inmate_gender", objTemplate).html(objInmate.gender);
-            //console.log(objTemplate)
-            return objTemplate;
-      }
-
-//Admin function: if the inmate info is incomplete this will refetch it
-//calls ajax_refetch.php wich calls refetch.py
-//nothing is returned
-
-    function ajax_refetch(person_id) {
-        
-        $.get("/tulsa/2.0/callRefetch.php?person_id="+person_id, function(data) {
-            console.log(data);
-        });
-        
+function buildInmateBriefs() {
+    var inmates = blah.returnInmates();
+    var iloop = inmates.length;
+    while(iloop--) {
+        //build the listview
+        //php that loads arrayDailyInmates checks to for generic no_photo.jpg and updates mugshotHash with no_photo
+        //this prevents records with no photos from creating a new image file when there is no photo
+        var mugImageLink = inmates[iloop].mugshotHash == "no_photo" ? "no_photo" : inmates[iloop].personId + "-" + inmates[iloop].mugshotHash;  
+        var split_name = inmates[iloop].name.split(",");
+        var inmate = "<li data-value='" + iloop + "'><a  href='#inmateDetails' >"
+            + "<img  src='/tulsa/mugs/thumbs85x85/" + mugImageLink + ".jpg' />"
+            + split_name[0] 
+            + "<br />" 
+            + split_name[1] 
+            + "<br /><span style='color:white; font-size: 13px;'>" 
+            + inmates[iloop].bookingTime  
+            + "</span>"
+            + "</a></li>";
+        $(inmate).prependTo("#inmateBrief");
     }
+//    var more = "<li id='more'><a href='#inmateBriefs'>more</a></li>";
+//    $(more).appendTo("#inmateBrief");        
+    //return true; 
+    refresh();
+}
+
+function buildInmateDetail(){
+        var objInmate = blah.returnCurrInmateDetail();
+        objTemplate = $('#inmateDetail');
+        if(objInmate.refetch_link) {
+            $(objTemplate).append("<br /><a href='javascript:void(0);' onclick='ajax_refetch(" + objInmate.personId + ");'>refetch info</a>");
+            $(objTemplate).append("<br />" + objInmate.personId);
+            $(objTemplate).append("<br />http://dev.pillowhammer.com/tulsa/mugs/" + objInmate.personId + "-" + objInmate.mugshotHash + ".jpg");
+        }
+        var mugImageLink = objInmate.mugshotHash == "no_photo" ? "no_photo" : objInmate.personId + "-" + objInmate.mugshotHash;
+        $('#inmate_detail_img', objTemplate).attr('src', '/tulsa/mugs/thumbs320/' + mugImageLink + '.jpg');
+        $('#inmate_name', objTemplate).html(objInmate.name);
+        $("#inmate_address", objTemplate).html(objInmate.address);
+        $("#inmate_city", objTemplate).html(objInmate.city);
+        $("#inmate_state", objTemplate).html(objInmate.state);
+        $("#inmate_zip", objTemplate).html(objInmate.zip);
+        $("#inmate_arrest_date", objTemplate).html(objInmate.arrestDate);
+        $("#inmate_arrest_time", objTemplate).html(objInmate.arrestTime);
+        $("#inmate_arrested_by", objTemplate).html(objInmate.arrestBy);
+        $("#inmate_agency", objTemplate).html(objInmate.agency);
+        $("#inmate_book_date", objTemplate).html(objInmate.bookingDate);
+        $("#inmate_book_time", objTemplate).html(objInmate.bookingTime);
+        $("#inmate_charge", objTemplate).html(objInmate.charge);
+        $("#inmate_charge2", objTemplate).html(objInmate.charge2);
+        $("#inmate_charge3", objTemplate).html(objInmate.charge3);
+        $("#inmate_bond", objTemplate).html(objInmate.bondAmt);
+        $("#inmate_birth", objTemplate).html(objInmate.birthday);
+        $("#inmate_hair", objTemplate).html(objInmate.hair);
+        $("#inmate_eyes", objTemplate).html(objInmate.eyes);
+        $("#inmate_height", objTemplate).html(objInmate.feet + "ft " + objInmate.inches + "in");
+        $("#inmate_weight", objTemplate).html(objInmate.weight + " lbs");
+        $("#inmate_race", objTemplate).html(" " + objInmate.race + " ");
+        $("#inmate_gender", objTemplate).html(objInmate.gender);
+}

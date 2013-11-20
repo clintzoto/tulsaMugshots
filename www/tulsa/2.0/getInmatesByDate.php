@@ -19,7 +19,8 @@ if($_GET['thisDay'] && isset($_SESSION['mugshots_is_logged_in'])) {
     }
     echo json_encode($rows);
 } elseif($_GET['thisDay']) {
-    $query = "select * from " . $environ . "records where bookingDate = '" . $_GET['thisDay'] . "' ORDER BY personID DESC";
+    $offset = $_GET['offset'] ? " OFFSET " . $_GET['offset'] : "OFFSET 0";
+    $query = "select * from " . $environ . "records where bookingDate = '" . $_GET['thisDay'] . "' ORDER BY personID DESC limit 20 " . $offset;
     $result = mysql_query($query);
     while($row = mysql_fetch_object($result)) {
         $row->refetch_link = "";        
